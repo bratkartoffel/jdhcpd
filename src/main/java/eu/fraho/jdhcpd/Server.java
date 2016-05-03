@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -618,7 +617,7 @@ public class Server extends MyThread {
 			//socket = new DHCPSocket(DHCPMessage.SERVER_PORT);
 			adresses.clear();
 		}
-		catch (SocketException | UnknownHostException e) {
+		catch (IOException e) {
 			setChanged();
 			notifyObservers(e);
 			

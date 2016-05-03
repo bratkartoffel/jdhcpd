@@ -9,12 +9,14 @@
 	<name>jdhcpd</name>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>1.6</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version> <!-- 3.x don't compile? -->
+
+		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 		<maven-idea-plugin.version>2.2.1</maven-idea-plugin.version>
+		<maven-assembly-plugin.version>2.6</maven-assembly-plugin.version>
 	</properties>
 
 	<build>
@@ -54,6 +56,18 @@
 				<configuration>
 					<downloadSources>true</downloadSources>
 					<dependenciesAsLibraries>true</dependenciesAsLibraries>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly-plugin.version}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>eu.fraho.jdhcpd.Application</mainClass>
+						</manifest>
+					</archive>
 				</configuration>
 			</plugin>
 		</plugins>
