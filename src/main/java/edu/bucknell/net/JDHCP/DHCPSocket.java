@@ -40,6 +40,20 @@ public class DHCPSocket extends DatagramSocket {
 		setSoTimeout(SOCKET_TIMEOUT);
 	}
 	
+	/** 
+	 * Constructor for creating DHCPSocket on a specific port and specific address 
+	 * on the local machine.
+	 * 
+	 * @param inPort The port for the application to bind.
+	 * @param address The address for the application to bind.
+	 * 
+	 * @throws SocketException As thrown by the {@link Socket} constructor
+	 */
+	public DHCPSocket(int inPort, String address) throws SocketException, UnknownHostException {
+		super(inPort,InetAddress.getByName(address));
+		setSoTimeout(SOCKET_TIMEOUT);
+	}
+	
 	/**
 	 * Sets the Maximum Transfer Unit for the UDP DHCP Packets to be set.
 	 * 

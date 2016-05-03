@@ -471,8 +471,11 @@ public class Server extends MyThread {
 	private void handleRequest(DHCPMessage m) {
 		byte message_type = m.getOption(DHCPOptions.OPTION_DHCP_MESSAGE_TYPE)[0];
 		String mac = Tools.byteToMac(m.getChaddr());
-		String hostname = new String(m.getOption(DHCPOptions.OPTION_HOSTNAME));
-		
+		String hostname = null;
+		// udhcpc doesn't send this option -> Nullpointer exception
+		if (m.getOption(DHCPOptions.OPTION_HOSTNAME) != null) {
+			hostname = new String(m.getOption(DHCPOptions.OPTION_HOSTNAME));
+		}
 		String ident = mac;
 		
 		if(hostname != null && hostname.length() > 0)
@@ -610,10 +613,12 @@ public class Server extends MyThread {
 		message("Server started on " + Tools.byteToIp(Application.getServerIp()));
 		
 		try {
-			socket = new DHCPSocket(DHCPMessage.SERVER_PORT);
+			//This is needed if the host has more than one active network card (Tested on Windows)
+			socket = new DHCPSocket(DHCPMessage.SERVER_PORT,  Tools.byteToIp(Application.getServerIp()));
+			//socket = new DHCPSocket(DHCPMessage.SERVER_PORT);
 			adresses.clear();
 		}
-		catch (SocketException e) {
+		catch (SocketException | UnknownHostException e) {
 			setChanged();
 			notifyObservers(e);
 			
@@ -754,6 +759,8 @@ public class Server extends MyThread {
 		back.setOption(DHCPOptions.OPTION_DHCP_MESSAGE_TYPE, new byte[] {
 			DHCPMessage.DHCPOFFER
 		});
+		//This is needed by e.g. udhcpc
+		back.setOption(DHCPOptions.OPTION_DHCP_SERVER_IDENTIFIER, Application.server_ip);
 		
 		if(Application.getDNSServers().length > 4) {
 			back.setOption(DHCPOptions.OPTION_DNS_SERVERS, Application.getDNSServers());
