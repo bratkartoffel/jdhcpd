@@ -158,6 +158,11 @@ public class Server extends MyThread {
 		private long leased;
 		
 		/**
+		 * Is this a manual lease?
+		 */
+		private boolean is_manual = false;
+		
+		/**
 		 * Creates a new lease for the given ip adress.
 		 * @param ip the ip adress to lease
 		 */
@@ -166,6 +171,11 @@ public class Server extends MyThread {
 			leased = System.currentTimeMillis() + 600000;
 			
 			ip_string = Tools.byteToIp(ip_byte);
+		}
+		
+		public Lease(byte[] ip, boolean is_manual) {
+			this(ip);
+			this.is_manual = is_manual;
 		}
 		
 		/**
@@ -206,6 +216,13 @@ public class Server extends MyThread {
 		 */
 		public boolean isValid() {
 			return (leased + lease_time >= System.currentTimeMillis());
+		}
+		
+		/**
+		 * @return was the lease manually added?
+		 */
+		public boolean isManual() {
+			return is_manual;
 		}
 		
 		/**
@@ -250,7 +267,7 @@ public class Server extends MyThread {
 				
 				for (String mac : toRemove) {
 					message("Lease for " + adresses.get(mac).getIpString() + " expired.");
-					adresses.remove(mac);
+					removeLeaseIfNotManual(mac);
 				}
 			}
 		}
@@ -373,7 +390,7 @@ public class Server extends MyThread {
 	 */
 	public void addClient(String mac, String ip) {
 		synchronized (adresses) {
-			adresses.put(mac, new Lease(Tools.ipToByte(ip)));
+			adresses.put(mac, new Lease(Tools.ipToByte(ip), true));
 		}
 	}
 	
@@ -493,11 +510,11 @@ public class Server extends MyThread {
 				message("DHCPDECLINE from " + ident);
 				adresses.put(String.valueOf(System.currentTimeMillis()), 
 						new Lease(Tools.ipToByte(Tools.byteToIp(m.getCiaddr()))));
-				adresses.remove(Tools.byteToMac(m.getChaddr()));
+				removeLeaseIfNotManual(Tools.byteToMac(m.getChaddr()));
 				break;
 			case DHCPMessage.DHCPRELEASE:
 				message("DHCPRELEASE from " + ident);
-				adresses.remove(Tools.byteToMac(m.getChaddr()));
+				removeLeaseIfNotManual(Tools.byteToMac(m.getChaddr()));
 				break;
 			case DHCPMessage.DHCPINFORM:
 				sendAck(m, new byte[4], true);
@@ -506,6 +523,19 @@ public class Server extends MyThread {
 				message("Received packet is an unhandled case. Message Type: "
 				    + (int) message_type);
 				break;
+		}
+	}
+	
+	private Lease removeLeaseIfNotManual(String mac) {
+		synchronized (adresses) {
+			Lease l = adresses.get(mac);
+			if (l == null) {
+				return null;
+			}
+			if (!l.isManual()) {
+				adresses.remove(mac);
+			}
+			return l;
 		}
 	}
 	
