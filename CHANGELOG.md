@@ -1,6 +1,9 @@
 Release history and changes of JDHCPD
 ===========================================
 
+0.11 (2018-04-02)
+  - Manually added leases are not removed automatically
+
 0.10 (2010-05-09)
   - Added an option to serve one or more dns server
   - Moved some parts from the Application class into the Server class
